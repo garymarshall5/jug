@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Aarke Jug - Filter Tracker</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Tailwind Config for Custom Premium Theme -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            iosBlue: '#0A84FF',
+            aarkeGold: '#D4AF37',
+            aarkeSteel: '#8E8E93',
+            iosDarkBg: '#1C1C1E',
+            iosCardDark: '#2C2C2E',
+            ocean: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              900: '#0c4a6e',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* iOS Momentum Scrolling & WebApp Styling */
+    body {
+      -webkit-tap-highlight-color: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      user-select: none;
+    }
+    /* Smooth wave animation for water circle */
+    @keyframes wave {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .water-wave {
+      animation: wave 14s linear infinite;
+    }
+    .water-wave-slow {
+      animation: wave 20s linear infinite;
+    }
+    /* Safe Area Inset Padding for iPhones with Notches */
+    .safe-padding {
+      padding-top: env(safe-area-inset-top, 16px);
+      padding-bottom: env(safe-area-inset-bottom, 16px);
+    }
+  </style>
+</head>
+<body class="bg-slate-955 text-slate-100 min-h-[100dvh] flex flex-col justify-between overflow-x-hidden selection:bg-blue-600 selection:text-white bg-gradient-to-b from-slate-900 to-black">
+
+  <!-- Main App Container -->
+  <div class="w-full max-w-md mx-auto flex flex-col h-[100dvh] justify-between p-4 safe-padding">
+    
+    <!-- Top Header -->
+    <header class="flex items-center justify-between pt-2 pb-2">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center border border-slate-700/60 shadow-lg">
+          <i class="fa-solid fa-glass-water text-sky-400 text-base animate-pulse"></i>
+        </div>
+        <div>
+          <h1 class="text-base font-bold tracking-widest text-white uppercase">Aarke Jug</h1>
+          <p class="text-[11px] text-slate-400 font-light">Premium Filter Tracker</p>
+        </div>
+      </div>
+      <button onclick="openSettings()" class="w-9 h-9 rounded-full bg-slate-800/80 flex items-center justify-center hover:bg-slate-700 transition border border-slate-750">
+        <i class="fa-solid fa-sliders text-slate-300 text-sm"></i>
+      </button>
+    </header>
+
+    <!-- Visual Water Tracker Dashboard -->
+    <main class="flex-grow flex flex-col justify-center items-center py-4 gap-4">
+      
+      <!-- Circular Progress Ring with Wave Animation -->
+      <div class="relative w-56 h-56 rounded-full bg-slate-900 border-2 border-slate-800/80 flex items-center justify-center shadow-[0_0_40px_rgba(0,0,0,0.8)] overflow-hidden">
+        <!-- Floating internal waves representing water remaining -->
+        <div id="water-level" class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[180%] h-[60%] bg-gradient-to-t from-sky-600 to-cyan-450/80 rounded-[42%] water-wave transition-all duration-1000 origin-center pointer-events-none"></div>
+        <div id="water-level-back" class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[185%] h-[63%] bg-gradient-to-t from-sky-800/40 to-cyan-500/30 rounded-[40%] water-wave-slow transition-all duration-1000 origin-center opacity-70 pointer-events-none"></div>
+
+        <!-- Inner Premium Glass Ring to Contain Metrics -->
+        <div class="absolute inset-2 rounded-full bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center z-10 border border-slate-800/80 shadow-[inset_0_4px_20px_rgba(0,0,0,0.6)]">
+          <span class="text-[9px] font-bold tracking-widest text-sky-400 uppercase">Days Left</span>
+          <span id="days-count" class="text-5xl font-extrabold text-white my-1 tracking-tighter">--</span>
+          <span id="due-date-preview" class="text-[11px] text-slate-400 font-light tracking-wide">Calculating...</span>
+        </div>
+      </div>
+
+      <!-- Quick Status Badges -->
+      <div class="grid grid-cols-2 gap-3 w-full">
+        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-3 flex flex-col justify-center shadow-md">
+          <span class="text-[8px] uppercase tracking-widest text-slate-400 font-bold">Last Changed</span>
+          <span id="last-changed-status" class="text-xs font-semibold text-white mt-1">--/--/----</span>
+        </div>
+        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-3 flex flex-col justify-center shadow-md">
+          <span class="text-[8px] uppercase tracking-widest text-slate-400 font-bold">Lifespan Rate</span>
+          <span id="lifespan-status" class="text-xs font-semibold text-white mt-1">31 Days</span>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Bottom Action Console -->
+    <footer class="flex flex-col gap-3">
+      
+      <!-- Primary Reset Timer Action -->
+      <button onclick="handleReplacementReset()" class="w-full bg-white hover:bg-slate-100 active:scale-[0.98] transition-all py-3.5 px-6 rounded-xl text-slate-950 font-bold flex items-center justify-center gap-3 shadow-lg shadow-white/5">
+        <i class="fa-solid fa-arrows-rotate text-xs"></i>
+        <span class="tracking-wider uppercase text-[11px] font-extrabold">Mark Replaced Today</span>
+      </button>
+
+      <!-- High-Contrast Calendar Sync Panel -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex flex-col gap-3 shadow-2xl">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i class="fa-brands fa-google text-red-400 text-xs animate-pulse"></i>
+            <span class="text-xs font-medium text-slate-300">Gary.marshall5@gmail.com</span>
+          </div>
+          <span class="text-[9px] uppercase tracking-widest bg-sky-500/15 text-sky-400 font-bold px-2 py-0.5 rounded border border-sky-500/30">Sync Next Event</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <!-- Add to Google Calendar Link - High Contrast White Button -->
+          <a id="gcal-btn" href="#" target="_blank" class="bg-white hover:bg-slate-100 active:bg-slate-200 transition text-slate-950 py-3.5 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-2 text-center shadow-lg">
+            <i class="fa-solid fa-calendar-plus text-red-600"></i>
+            <span>Google Calendar</span>
+          </a>
+
+          <!-- Download Standard ICS Event (For iOS default calendar) -->
+          <button onclick="downloadIcsFile()" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-750 transition text-white border border-slate-700 py-3.5 px-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 shadow-sm">
+            <i class="fa-solid fa-apple-whole text-slate-200"></i>
+            <span>iOS Cal (.ics)</span>
+          </button>
+        </div>
+      </div>
+
+    </footer>
+
+  </div>
+
+  <!-- Settings Slide-over (iOS Style Modal) -->
+  <div id="settings-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-end justify-center transition-opacity duration-300 pointer-events-none opacity-0">
+    <div id="settings-panel" class="w-full max-w-md bg-slate-950 border-t border-slate-800 rounded-t-3xl p-6 transform translate-y-full transition-transform duration-300 flex flex-col gap-6 safe-padding">
+      
+      <!-- Modal Indicator/Handle -->
+      <div class="w-12 h-1.5 bg-slate-800 rounded-full mx-auto -mt-2 cursor-pointer" onclick="closeSettings()"></div>
+
+      <div class="flex justify-between items-center">
+        <h2 class="text-xs font-extrabold text-white tracking-widest uppercase"><i class="fa-solid fa-sliders text-sky-400 mr-2"></i>Configure Tracker</h2>
+        <button onclick="closeSettings()" class="text-xs font-bold text-sky-400 uppercase tracking-widest">Done</button>
+      </div>
+
+      <div class="flex flex-col gap-4">
+        <!-- Target Email Address Config -->
+        <div class="flex flex-col gap-1.5">
+          <label class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Target Google Account</label>
+          <div class="relative">
+            <input type="email" id="email-input" value="Gary.marshall5@gmail.com" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-500 transition">
+            <i class="fa-solid fa-envelope absolute right-4 top-1/2 -translate-y-1/2 text-slate-500"></i>
+          </div>
+        </div>
+
+        <!-- Custom Lifespan Slider -->
+        <div class="flex flex-col gap-1.5">
+          <div class="flex justify-between">
+            <label class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Filter Lifespan (Days)</label>
+            <span id="lifespan-val" class="text-sm font-bold text-sky-400">31 Days</span>
+          </div>
+          <input type="range" id="lifespan-slider" min="1" max="180" step="1" value="31" oninput="updateLifespanLabel(this.value)" class="w-full accent-sky-500 bg-slate-900 h-2 rounded-lg cursor-pointer">
+          <div class="flex justify-between text-[10px] text-slate-500 px-1 mt-0.5">
+            <span>1d</span>
+            <span>31d (Default)</span>
+            <span>180d</span>
+          </div>
+        </div>
+
+        <!-- Manual Last Replaced Selector -->
+        <div class="flex flex-col gap-1.5">
+          <label class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Manual Change Date Override</label>
+          <input type="date" id="date-override" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-500 transition">
+        </div>
+      </div>
+
+      <button onclick="saveSettings()" class="w-full bg-slate-900 hover:bg-slate-850 text-white font-semibold py-3.5 rounded-xl border border-slate-800 transition text-xs font-bold uppercase tracking-widest">
+        Save Configurations
+      </button>
+
+    </div>
+  </div>
+
+  <!-- Custom Alert Notification Overlay -->
+  <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 bg-slate-900/95 border border-sky-500/30 text-white px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 z-50 pointer-events-none transform -translate-y-24 opacity-0 transition-all duration-300 max-w-sm w-[90%]">
+    <div class="w-8 h-8 rounded-full bg-sky-500/20 flex items-center justify-center text-sky-400 shrink-0">
+      <i id="toast-icon" class="fa-solid fa-circle-check"></i>
+    </div>
+    <div class="flex flex-col">
+      <span id="toast-title" class="font-bold text-xs text-white">Notification</span>
+      <span id="toast-desc" class="text-[11px] text-slate-300">Action successfully processed.</span>
+    </div>
+  </div>
+
+  <script>
+    // App State Configuration
+    let state = {
+      email: 'Gary.marshall5@gmail.com',
+      lifespanDays: 31,
+      lastReplacedDate: null
+    };
+
+    // Load State on Boot
+    window.addEventListener('load', () => {
+      const saved = localStorage.getItem('aarke_track_v2');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          state.email = parsed.email || 'Gary.marshall5@gmail.com';
+          state.lifespanDays = parseInt(parsed.lifespanDays) || 31;
+          state.lastReplacedDate = parsed.lastReplacedDate ? new Date(parsed.lastReplacedDate) : new Date();
+        } catch(e) {
+          state.lastReplacedDate = new Date();
+        }
+      } else {
+        state.lastReplacedDate = new Date();
+      }
+
+      // Populate Inputs in Settings View
+      document.getElementById('email-input').value = state.email;
+      document.getElementById('lifespan-slider').value = state.lifespanDays;
+      updateLifespanLabel(state.lifespanDays);
+      
+      const formattedDateInput = state.lastReplacedDate.toISOString().split('T')[0];
+      document.getElementById('date-override').value = formattedDateInput;
+
+      // Render Screen
+      refreshDashboard();
+    });
+
+    // Save state helper
+    function persistState() {
+      localStorage.setItem('aarke_track_v1', JSON.stringify({
+        email: state.email,
+        lifespanDays: state.lifespanDays,
+        lastReplacedDate: state.lastReplacedDate.toISOString()
+      }));
+    }
+
+    // Refresh Dashboard Layout Logic
+    function refreshDashboard() {
+      if (!state.lastReplacedDate) return;
+
+      const now = new Date();
+      
+      // Target Due Date
+      const dueDate = new Date(state.lastReplacedDate.getTime());
+      dueDate.setDate(dueDate.getDate() + state.lifespanDays);
+
+      // Diff Days Calculation
+      const diffTime = dueDate.getTime() - now.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      // Visual updates
+      const daysCountEl = document.getElementById('days-count');
+      const dueDatePreviewEl = document.getElementById('due-date-preview');
+      const lastChangedEl = document.getElementById('last-changed-status');
+      const lifespanEl = document.getElementById('lifespan-status');
+      const waterLevelEl = document.getElementById('water-level');
+      const waterLevelBackEl = document.getElementById('water-level-back');
+
+      // Set Text
+      daysCountEl.innerText = diffDays;
+      dueDatePreviewEl.innerText = `Due: ${dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+      
+      // Last replaced presentation
+      lastChangedEl.innerText = state.lastReplacedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      lifespanEl.innerText = `${state.lifespanDays} Days`;
+
+      // Wave calculation logic (0% - 100% capacity representation)
+      let capacityPercent = Math.max(0, Math.min(100, (diffDays / state.lifespanDays) * 105));
+      
+      // Calculate CSS height
+      let heightPct = 15 + (capacityPercent * 0.7);
+      if (diffDays <= 0) {
+        heightPct = 10;
+        daysCountEl.classList.add('text-red-500');
+        daysCountEl.classList.remove('text-white');
+      } else {
+        daysCountEl.classList.remove('text-red-500');
+        daysCountEl.classList.add('text-white');
+      }
+
+      waterLevelEl.style.height = `${heightPct}%`;
+      waterLevelBackEl.style.height = `${heightPct + 3}%`;
+
+      // Update Calendars Links
+      updateCalendarDirectives(dueDate);
+    }
+
+    // GCal Pre-built Template link Construction
+    function updateCalendarDirectives(targetDate) {
+      const startEvent = new Date(targetDate);
+      startEvent.setHours(9, 0, 0, 0);
+      const endEvent = new Date(targetDate);
+      endEvent.setHours(10, 0, 0, 0);
+
+      const formatToUTC = (d) => {
+        return d.toISOString().replace(/-|:|\.\d\d\d/g, "");
+      };
+
+      const title = encodeURIComponent("Replace Aarke Jug Filter 💦");
+      const details = encodeURIComponent("Reminder generated by your Aarke Jug Tracker. Replace your pure filter granules now to keep your water fresh.");
+      const datesParam = `${formatToUTC(startEvent)}/${formatToUTC(endEvent)}`;
+      
+      // Construct Web GCal Template URL
+      const gCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${datesParam}&details=${details}&add=${encodeURIComponent(state.email)}`;
+      
+      document.getElementById('gcal-btn').setAttribute('href', gCalUrl);
+    }
+
+    // Trigger Replacement Cycle
+    function handleReplacementReset() {
+      state.lastReplacedDate = new Date();
+      persistState();
+      refreshDashboard();
+
+      // Set input override in settings to today
+      const formattedDateInput = state.lastReplacedDate.toISOString().split('T')[0];
+      document.getElementById('date-override').value = formattedDateInput;
+
+      showToast(
+        "Aarke Jug Reset!", 
+        `New target date is scheduled 31 days from now. Use the calendar link below to configure your Google Calendar event.`, 
+        "fa-solid fa-rotate"
+      );
+    }
+
+    // Slider Label Sync
+    function updateLifespanLabel(val) {
+      document.getElementById('lifespan-val').innerText = `${val} Days`;
+    }
+
+    // Modal Control Functions
+    function openSettings() {
+      const modal = document.getElementById('settings-modal');
+      const panel = document.getElementById('settings-panel');
+      
+      modal.classList.remove('pointer-events-none', 'opacity-0');
+      modal.classList.add('opacity-100');
+      panel.classList.remove('translate-y-full');
+    }
+
+    // Close Settings View
+    function closeSettings() {
+      const modal = document.getElementById('settings-modal');
+      const panel = document.getElementById('settings-panel');
+      
+      modal.classList.add('pointer-events-none', 'opacity-0');
+      modal.classList.remove('opacity-100');
+      panel.classList.add('translate-y-full');
+    }
+
+    function saveSettings() {
+      const targetEmail = document.getElementById('email-input').value.trim();
+      const sliderVal = parseInt(document.getElementById('lifespan-slider').value);
+      const overrideVal = document.getElementById('date-override').value;
+
+      if (targetEmail) state.email = targetEmail;
+      state.lifespanDays = sliderVal;
+      
+      if (overrideVal) {
+        state.lastReplacedDate = new Date(overrideVal + 'T12:00:00'); // Prevent timezone shifts
+      }
+
+      persistState();
+      refreshDashboard();
+      closeSettings();
+
+      showToast("Settings Updated", "Configurations saved successfully.", "fa-solid fa-circle-check");
+    }
+
+    // Trigger ICS File Generation & Download for Native Apple iOS Calendar
+    function downloadIcsFile() {
+      const dueDate = new Date(state.lastReplacedDate.getTime());
+      dueDate.setDate(dueDate.getDate() + state.lifespanDays);
+      
+      const startEvent = new Date(dueDate);
+      startEvent.setHours(9, 0, 0, 0);
+      const endEvent = new Date(dueDate);
+      endEvent.setHours(10, 0, 0, 0);
+
+      const formatToICS = (d) => {
+        return d.toISOString().replace(/-|:|\.\d\d\d/g, "");
+      };
+
+      const icsMsg = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//AarkeJug//Water Filter Reminders//EN",
+        "BEGIN:VEVENT",
+        `UID:${Date.now()}@aarkejug.app`,
+        `DTSTAMP:${formatToICS(new Date())}`,
+        `DTSTART:${formatToICS(startEvent)}`,
+        `DTEND:${formatToICS(endEvent)}`,
+        "SUMMARY:Replace Aarke Jug Filter 💦",
+        "DESCRIPTION:Time to change your Aarke filter granules to maintain great-tasting, clean water.",
+        "ATTENDEE;CN=Gary Marshall;RSVP=FALSE:mailto:" + state.email,
+        "END:VEVENT",
+        "END:VCALENDAR"
+      ].join("\r\n");
+
+      const blob = new Blob([icsMsg], { type: "text/calendar;charset=utf-8" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "replace-aarke-filter.ics";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      showToast("Download Initialized", "Your iOS .ics event card is ready. Tap to install into Apple Calendar.", "fa-solid fa-download");
+    }
+
+    // Custom iOS style Alert Toast Engine
+    function showToast(title, description, iconClass = "fa-solid fa-circle-check") {
+      const toast = document.getElementById('toast');
+      const toastTitle = document.getElementById('toast-title');
+      const toastDesc = document.getElementById('toast-desc');
+      const toastIcon = document.getElementById('toast-icon');
+
+      toastTitle.innerText = title;
+      toastDesc.innerText = description;
+      toastIcon.className = iconClass;
+
+      // Animate slide down and in
+      toast.classList.remove('-translate-y-24', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      // Dismiss automatically
+      setTimeout(() => {
+        toast.classList.add('-translate-y-24', 'opacity-0');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 5000);
+    }
+  </script>
+</body>
+</html>
