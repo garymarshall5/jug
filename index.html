@@ -3,27 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Aarke Jug - Filter Tracker</title>
+  <title>Aarke Jug - Premium Filter Tracker</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Tailwind Config for Custom Premium Theme -->
+  <!-- Tailwind Config for Custom Premium Light Theme -->
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            iosBlue: '#0A84FF',
-            aarkeGold: '#D4AF37',
+            iosBlue: '#007AFF',
+            aarkeGold: '#C5A059',
             aarkeSteel: '#8E8E93',
-            iosDarkBg: '#1C1C1E',
-            iosCardDark: '#2C2C2E',
-            ocean: {
-              50: '#f0f9ff',
-              100: '#e0f2fe',
-              500: '#0ea5e9',
-              600: '#0284c7',
-              900: '#0c4a6e',
-            }
+            aarkeCharcoal: '#1C1C1E',
+            premiumGray: '#F2F2F7',
           }
         }
       }
@@ -38,25 +31,26 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       user-select: none;
     }
-    /* Smooth wave animation for water circle */
-    @keyframes wave {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    .water-wave {
-      animation: wave 14s linear infinite;
-    }
-    .water-wave-slow {
-      animation: wave 20s linear infinite;
-    }
     /* Safe Area Inset Padding for iPhones with Notches */
     .safe-padding {
       padding-top: env(safe-area-inset-top, 16px);
       padding-bottom: env(safe-area-inset-bottom, 16px);
     }
+    /* Smooth transitions for outer tracking wheel and water SVG components */
+    #progress-ring-active, #water-liquid, #water-wave {
+      transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    /* Gentle floating animation for water inside the jug */
+    @keyframes waveFloat {
+      0%, 100% { transform: translateY(0px) scaleY(1); }
+      50% { transform: translateY(2px) scaleY(1.05); }
+    }
+    .water-float {
+      animation: waveFloat 4s ease-in-out infinite;
+    }
   </style>
 </head>
-<body class="bg-slate-955 text-slate-100 min-h-[100dvh] flex flex-col justify-between overflow-x-hidden selection:bg-blue-600 selection:text-white bg-gradient-to-b from-slate-900 to-black">
+<body class="bg-slate-50 text-slate-800 min-h-[100dvh] flex flex-col justify-between overflow-x-hidden selection:bg-blue-200 bg-gradient-to-b from-sky-50 to-slate-100">
 
   <!-- Main App Container -->
   <div class="w-full max-w-md mx-auto flex flex-col h-[100dvh] justify-between p-4 safe-padding">
@@ -64,45 +58,144 @@
     <!-- Top Header -->
     <header class="flex items-center justify-between pt-2 pb-2">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center border border-slate-700/60 shadow-lg">
-          <i class="fa-solid fa-glass-water text-sky-400 text-base animate-pulse"></i>
+        <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center border border-slate-200/80 shadow-md">
+          <i class="fa-solid fa-droplet text-sky-500 text-base"></i>
         </div>
         <div>
-          <h1 class="text-base font-bold tracking-widest text-white uppercase">Aarke Jug</h1>
-          <p class="text-[11px] text-slate-400 font-light">Premium Filter Tracker</p>
+          <h1 class="text-base font-black tracking-widest text-slate-900 uppercase">Aarke Jug</h1>
+          <p class="text-[11px] text-slate-500 font-medium uppercase tracking-wider">Premium Filter Tracker</p>
         </div>
       </div>
-      <button onclick="openSettings()" class="w-9 h-9 rounded-full bg-slate-800/80 flex items-center justify-center hover:bg-slate-700 transition border border-slate-750">
-        <i class="fa-solid fa-sliders text-slate-300 text-sm"></i>
+      <button onclick="openSettings()" class="w-9 h-9 rounded-full bg-white hover:bg-slate-50 active:scale-95 transition flex items-center justify-center border border-slate-200 shadow-sm">
+        <i class="fa-solid fa-sliders text-slate-600 text-sm"></i>
       </button>
     </header>
 
     <!-- Visual Water Tracker Dashboard -->
     <main class="flex-grow flex flex-col justify-center items-center py-4 gap-4">
       
-      <!-- Circular Progress Ring with Wave Animation -->
-      <div class="relative w-56 h-56 rounded-full bg-slate-900 border-2 border-slate-800/80 flex items-center justify-center shadow-[0_0_40px_rgba(0,0,0,0.8)] overflow-hidden">
-        <!-- Floating internal waves representing water remaining -->
-        <div id="water-level" class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[180%] h-[60%] bg-gradient-to-t from-sky-600 to-cyan-450/80 rounded-[42%] water-wave transition-all duration-1000 origin-center pointer-events-none"></div>
-        <div id="water-level-back" class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[185%] h-[63%] bg-gradient-to-t from-sky-800/40 to-cyan-500/30 rounded-[40%] water-wave-slow transition-all duration-1000 origin-center opacity-70 pointer-events-none"></div>
+      <!-- Circular Progress Ring (The Outer Expiry Wheel) -->
+      <div class="relative w-64 h-64 rounded-full flex items-center justify-center bg-white/60 backdrop-blur-md border border-white/80 shadow-xl shadow-slate-200/50 overflow-hidden">
+        
+        <!-- SVG Progress Ring Wheel Frame -->
+        <svg class="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 220 220">
+          <defs>
+            <!-- Luminous Gradient for Expiry Dial Progress -->
+            <linearGradient id="ring-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#0ea5e9" />
+              <stop offset="100%" stop-color="#2563eb" />
+            </linearGradient>
+          </defs>
+          <!-- Track ring -->
+          <circle 
+            cx="110" 
+            cy="110" 
+            r="102" 
+            stroke="#f1f5f9" 
+            stroke-width="5" 
+            fill="transparent" 
+          />
+          <!-- Active tracking ring -->
+          <circle 
+            id="progress-ring-active"
+            cx="110" 
+            cy="110" 
+            r="102" 
+            stroke="url(#ring-gradient)" 
+            stroke-width="6" 
+            stroke-dasharray="640.88"
+            stroke-dashoffset="640.88"
+            stroke-linecap="round"
+            fill="transparent" 
+          />
+        </svg>
 
-        <!-- Inner Premium Glass Ring to Contain Metrics -->
-        <div class="absolute inset-2 rounded-full bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center z-10 border border-slate-800/80 shadow-[inset_0_4px_20px_rgba(0,0,0,0.6)]">
-          <span class="text-[9px] font-bold tracking-widest text-sky-400 uppercase">Days Left</span>
-          <span id="days-count" class="text-5xl font-extrabold text-white my-1 tracking-tighter">--</span>
-          <span id="due-date-preview" class="text-[11px] text-slate-400 font-light tracking-wide">Calculating...</span>
+        <!-- Dynamic Vector SVG of Aarke Glass Water Jug -->
+        <div class="absolute inset-4 rounded-full bg-gradient-to-b from-white to-slate-50 flex flex-col items-center justify-center shadow-inner border border-white">
+          
+          <!-- Core Jug Graphic -->
+          <svg id="jug-svg" viewBox="0 0 200 240" class="w-32 h-36 drop-shadow-[0_8px_16px_rgba(14,165,233,0.1)]">
+            <defs>
+              <!-- Glass Sheen Gradient -->
+              <linearGradient id="jug-glass" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9" />
+                <stop offset="25%" stop-color="#ffffff" stop-opacity="0.2" />
+                <stop offset="75%" stop-color="#ffffff" stop-opacity="0.1" />
+                <stop offset="100%" stop-color="#cbd5e1" stop-opacity="0.6" />
+              </linearGradient>
+              
+              <!-- Premium Stainless Steel Gradient -->
+              <linearGradient id="steel-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#94a3b8" />
+                <stop offset="35%" stop-color="#e2e8f0" />
+                <stop offset="65%" stop-color="#f1f5f9" />
+                <stop offset="100%" stop-color="#64748b" />
+              </linearGradient>
+
+              <!-- Water Liquid Gradient -->
+              <linearGradient id="water-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.8" />
+                <stop offset="100%" stop-color="#0284c7" stop-opacity="0.9" />
+              </linearGradient>
+              
+              <!-- Custom Clipping Mask for inside of Glass Carafe -->
+              <clipPath id="jug-clip">
+                <path d="M76,40 L124,40 L134,70 L134,210 C134,225 120,232 100,232 C80,232 66,225 66,210 L66,70 Z" />
+              </clipPath>
+            </defs>
+
+            <!-- 1. Liquid Contents (Clipped to Carafe Shape) -->
+            <g clip-path="url(#jug-clip)">
+              <!-- Dynamic Water Block -->
+              <rect id="water-liquid" x="50" y="95" width="100" height="140" fill="url(#water-grad)" />
+              <!-- Water Surface Wave Effect -->
+              <g id="water-wave">
+                <path d="M 50 100 C 75 96, 75 104, 100 100 C 125 96, 125 104, 150 100 L 150 115 L 50 115 Z" fill="#38bdf8" opacity="0.5" class="water-float" />
+              </g>
+            </g>
+
+            <!-- 2. Central Stainless Filter Column (Core of Aarke System) -->
+            <path d="M82,40 L118,40 L114,130 L86,130 Z" fill="url(#steel-grad)" stroke="#475569" stroke-width="0.75" />
+            <line x1="93" y1="130" x2="93" y2="145" stroke="#94a3b8" stroke-width="1.5" />
+            <line x1="107" y1="130" x2="107" y2="145" stroke="#94a3b8" stroke-width="1.5" />
+            <rect x="90" y="145" width="20" height="16" rx="2" fill="#475569" opacity="0.85" />
+
+            <!-- 3. Glass Outer Carafe Shell -->
+            <path d="M76,40 L124,40 L134,70 L134,210 C134,225 120,232 100,232 C80,232 66,225 66,210 L66,70 Z" 
+                  fill="url(#jug-glass)" stroke="#94a3b8" stroke-width="2.5" />
+
+            <!-- 4. Metallic Pour Spout -->
+            <path d="M76,40 L60,37 L64,48 Z" fill="url(#steel-grad)" stroke="#475569" stroke-width="1" />
+
+            <!-- 5. Signature Stainless Handle -->
+            <path d="M131,80 C154,80 154,190 131,190" fill="transparent" stroke="url(#steel-grad)" stroke-width="8" stroke-linecap="round" />
+            <path d="M131,80 C154,80 154,190 131,190" fill="transparent" stroke="#475569" stroke-width="0.75" stroke-linecap="round" />
+            
+            <!-- 6. Metal Lid -->
+            <path d="M72,35 L128,35 C128,35 131,40 125,40 L75,40 C69,40 72,35 72,35 Z" fill="url(#steel-grad)" stroke="#334155" stroke-width="1.5" />
+            <circle cx="100" cy="30" r="4.5" fill="url(#steel-grad)" stroke="#334155" stroke-width="1" />
+          </svg>
+
+          <!-- Core Counter Readout overlaying base of jug representation -->
+          <div class="absolute bottom-4 flex flex-col items-center">
+            <span class="text-[9px] font-black tracking-widest text-slate-400 uppercase">Days To Go</span>
+            <span id="days-count" class="text-4xl font-extrabold text-slate-800 tracking-tighter leading-none mt-1">--</span>
+            <span id="due-date-preview" class="text-[10px] text-sky-600 font-bold tracking-wide mt-1">Calculating...</span>
+          </div>
+          
         </div>
+        
       </div>
 
       <!-- Quick Status Badges -->
       <div class="grid grid-cols-2 gap-3 w-full">
-        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-3 flex flex-col justify-center shadow-md">
-          <span class="text-[8px] uppercase tracking-widest text-slate-400 font-bold">Last Changed</span>
-          <span id="last-changed-status" class="text-xs font-semibold text-white mt-1">--/--/----</span>
+        <div class="bg-white border border-slate-200/80 rounded-2xl p-3 flex flex-col justify-center shadow-sm">
+          <span class="text-[8px] uppercase tracking-widest text-slate-400 font-extrabold">Last Filter Swap</span>
+          <span id="last-changed-status" class="text-xs font-bold text-slate-800 mt-1">--/--/----</span>
         </div>
-        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-3 flex flex-col justify-center shadow-md">
-          <span class="text-[8px] uppercase tracking-widest text-slate-400 font-bold">Lifespan Rate</span>
-          <span id="lifespan-status" class="text-xs font-semibold text-white mt-1">31 Days</span>
+        <div class="bg-white border border-slate-200/80 rounded-2xl p-3 flex flex-col justify-center shadow-sm">
+          <span class="text-[8px] uppercase tracking-widest text-slate-400 font-extrabold">Standard Lifespan</span>
+          <span id="lifespan-status" class="text-xs font-bold text-slate-800 mt-1">31 Days</span>
         </div>
       </div>
 
@@ -111,32 +204,32 @@
     <!-- Bottom Action Console -->
     <footer class="flex flex-col gap-3">
       
-      <!-- Primary Reset Timer Action -->
-      <button onclick="handleReplacementReset()" class="w-full bg-white hover:bg-slate-100 active:scale-[0.98] transition-all py-3.5 px-6 rounded-xl text-slate-950 font-bold flex items-center justify-center gap-3 shadow-lg shadow-white/5">
-        <i class="fa-solid fa-arrows-rotate text-xs"></i>
-        <span class="tracking-wider uppercase text-[11px] font-extrabold">Mark Replaced Today</span>
+      <!-- Primary Reset Timer Action - High Impact Light Blue Button -->
+      <button onclick="handleReplacementReset()" class="w-full bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 active:scale-[0.98] transition-all py-4 px-6 rounded-2xl text-white font-extrabold flex items-center justify-center gap-3 shadow-lg shadow-sky-200/85">
+        <i class="fa-solid fa-arrows-rotate text-sm"></i>
+        <span class="tracking-widest uppercase text-xs">Mark Replaced Today</span>
       </button>
 
-      <!-- High-Contrast Calendar Sync Panel -->
-      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex flex-col gap-3 shadow-2xl">
+      <!-- Calendar Sync Panel -->
+      <div class="bg-white/80 border border-slate-200/80 rounded-2xl p-4 flex flex-col gap-3 shadow-md">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <i class="fa-brands fa-google text-red-400 text-xs animate-pulse"></i>
-            <span class="text-xs font-medium text-slate-300">Gary.marshall5@gmail.com</span>
+            <i class="fa-brands fa-google text-red-500 text-xs"></i>
+            <span class="text-xs font-bold text-slate-700">Gary.marshall5@gmail.com</span>
           </div>
-          <span class="text-[9px] uppercase tracking-widest bg-sky-500/15 text-sky-400 font-bold px-2 py-0.5 rounded border border-sky-500/30">Sync Next Event</span>
+          <span class="text-[9px] uppercase tracking-widest bg-sky-500/10 text-sky-600 font-extrabold px-2 py-0.5 rounded border border-sky-500/20">Sync Filter</span>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
-          <!-- Add to Google Calendar Link - High Contrast White Button -->
-          <a id="gcal-btn" href="#" target="_blank" class="bg-white hover:bg-slate-100 active:bg-slate-200 transition text-slate-950 py-3.5 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-2 text-center shadow-lg">
-            <i class="fa-solid fa-calendar-plus text-red-600"></i>
+          <!-- Add to Google Calendar Link - Rich Contrast Black Slate Button -->
+          <a id="gcal-btn" href="#" target="_blank" class="bg-slate-900 hover:bg-slate-800 active:bg-black transition text-white py-3.5 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-2 text-center shadow-md">
+            <i class="fa-solid fa-calendar-plus text-sky-400"></i>
             <span>Google Calendar</span>
           </a>
 
           <!-- Download Standard ICS Event (For iOS default calendar) -->
-          <button onclick="downloadIcsFile()" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-750 transition text-white border border-slate-700 py-3.5 px-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 shadow-sm">
-            <i class="fa-solid fa-apple-whole text-slate-200"></i>
+          <button onclick="downloadIcsFile()" class="bg-white hover:bg-slate-50 active:bg-slate-100 transition text-slate-700 border border-slate-200 py-3.5 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm">
+            <i class="fa-solid fa-apple-whole text-slate-800"></i>
             <span>iOS Cal (.ics)</span>
           </button>
         </div>
@@ -147,15 +240,15 @@
   </div>
 
   <!-- Settings Slide-over (iOS Style Modal) -->
-  <div id="settings-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-end justify-center transition-opacity duration-300 pointer-events-none opacity-0">
-    <div id="settings-panel" class="w-full max-w-md bg-slate-950 border-t border-slate-800 rounded-t-3xl p-6 transform translate-y-full transition-transform duration-300 flex flex-col gap-6 safe-padding">
+  <div id="settings-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end justify-center transition-opacity duration-300 pointer-events-none opacity-0">
+    <div id="settings-panel" class="w-full max-w-md bg-white border-t border-slate-250 rounded-t-3xl p-6 transform translate-y-full transition-transform duration-300 flex flex-col gap-6 safe-padding shadow-2xl">
       
       <!-- Modal Indicator/Handle -->
-      <div class="w-12 h-1.5 bg-slate-800 rounded-full mx-auto -mt-2 cursor-pointer" onclick="closeSettings()"></div>
+      <div class="w-12 h-1.5 bg-slate-300 rounded-full mx-auto -mt-2 cursor-pointer" onclick="closeSettings()"></div>
 
       <div class="flex justify-between items-center">
-        <h2 class="text-xs font-extrabold text-white tracking-widest uppercase"><i class="fa-solid fa-sliders text-sky-400 mr-2"></i>Configure Tracker</h2>
-        <button onclick="closeSettings()" class="text-xs font-bold text-sky-400 uppercase tracking-widest">Done</button>
+        <h2 class="text-xs font-black text-slate-900 tracking-widest uppercase"><i class="fa-solid fa-sliders text-sky-500 mr-2"></i>Configure Tracker</h2>
+        <button onclick="closeSettings()" class="text-xs font-bold text-sky-500 uppercase tracking-widest">Done</button>
       </div>
 
       <div class="flex flex-col gap-4">
@@ -163,8 +256,8 @@
         <div class="flex flex-col gap-1.5">
           <label class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Target Google Account</label>
           <div class="relative">
-            <input type="email" id="email-input" value="Gary.marshall5@gmail.com" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-500 transition">
-            <i class="fa-solid fa-envelope absolute right-4 top-1/2 -translate-y-1/2 text-slate-500"></i>
+            <input type="email" id="email-input" value="Gary.marshall5@gmail.com" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 outline-none focus:border-sky-500 transition">
+            <i class="fa-solid fa-envelope absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
           </div>
         </div>
 
@@ -172,10 +265,10 @@
         <div class="flex flex-col gap-1.5">
           <div class="flex justify-between">
             <label class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Filter Lifespan (Days)</label>
-            <span id="lifespan-val" class="text-sm font-bold text-sky-400">31 Days</span>
+            <span id="lifespan-val" class="text-sm font-black text-sky-500">31 Days</span>
           </div>
-          <input type="range" id="lifespan-slider" min="1" max="180" step="1" value="31" oninput="updateLifespanLabel(this.value)" class="w-full accent-sky-500 bg-slate-900 h-2 rounded-lg cursor-pointer">
-          <div class="flex justify-between text-[10px] text-slate-500 px-1 mt-0.5">
+          <input type="range" id="lifespan-slider" min="1" max="180" step="1" value="31" oninput="updateLifespanLabel(this.value)" class="w-full accent-sky-500 bg-slate-100 h-2 rounded-lg cursor-pointer">
+          <div class="flex justify-between text-[10px] text-slate-400 px-1 mt-0.5">
             <span>1d</span>
             <span>31d (Default)</span>
             <span>180d</span>
@@ -185,11 +278,11 @@
         <!-- Manual Last Replaced Selector -->
         <div class="flex flex-col gap-1.5">
           <label class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Manual Change Date Override</label>
-          <input type="date" id="date-override" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-500 transition">
+          <input type="date" id="date-override" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 outline-none focus:border-sky-500 transition">
         </div>
       </div>
 
-      <button onclick="saveSettings()" class="w-full bg-slate-900 hover:bg-slate-850 text-white font-semibold py-3.5 rounded-xl border border-slate-800 transition text-xs font-bold uppercase tracking-widest">
+      <button onclick="saveSettings()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl transition text-xs uppercase tracking-widest shadow-md">
         Save Configurations
       </button>
 
@@ -197,13 +290,13 @@
   </div>
 
   <!-- Custom Alert Notification Overlay -->
-  <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 bg-slate-900/95 border border-sky-500/30 text-white px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 z-50 pointer-events-none transform -translate-y-24 opacity-0 transition-all duration-300 max-w-sm w-[90%]">
-    <div class="w-8 h-8 rounded-full bg-sky-500/20 flex items-center justify-center text-sky-400 shrink-0">
-      <i id="toast-icon" class="fa-solid fa-circle-check"></i>
+  <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 bg-white/95 border border-sky-500/20 text-slate-800 px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 z-50 pointer-events-none transform -translate-y-24 opacity-0 transition-all duration-300 max-w-sm w-[90%]">
+    <div class="w-8 h-8 rounded-full bg-sky-500/10 flex items-center justify-center text-sky-500 shrink-0">
+      <i id="toast-icon" class="fa-solid fa-circle-check text-sm"></i>
     </div>
     <div class="flex flex-col">
-      <span id="toast-title" class="font-bold text-xs text-white">Notification</span>
-      <span id="toast-desc" class="text-[11px] text-slate-300">Action successfully processed.</span>
+      <span id="toast-title" class="font-extrabold text-xs text-slate-900">Notification</span>
+      <span id="toast-desc" class="text-[11px] text-slate-500 font-medium">Action successfully processed.</span>
     </div>
   </div>
 
@@ -245,7 +338,7 @@
 
     // Save state helper
     function persistState() {
-      localStorage.setItem('aarke_track_v1', JSON.stringify({
+      localStorage.setItem('aarke_track_v2', JSON.stringify({
         email: state.email,
         lifespanDays: state.lifespanDays,
         lastReplacedDate: state.lastReplacedDate.toISOString()
@@ -271,8 +364,9 @@
       const dueDatePreviewEl = document.getElementById('due-date-preview');
       const lastChangedEl = document.getElementById('last-changed-status');
       const lifespanEl = document.getElementById('lifespan-status');
-      const waterLevelEl = document.getElementById('water-level');
-      const waterLevelBackEl = document.getElementById('water-level-back');
+      const progressRingActive = document.getElementById('progress-ring-active');
+      const waterLiquid = document.getElementById('water-liquid');
+      const waterWave = document.getElementById('water-wave');
 
       // Set Text
       daysCountEl.innerText = diffDays;
@@ -282,28 +376,47 @@
       lastChangedEl.innerText = state.lastReplacedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
       lifespanEl.innerText = `${state.lifespanDays} Days`;
 
-      // Wave calculation logic (0% - 100% capacity representation)
-      let capacityPercent = Math.max(0, Math.min(100, (diffDays / state.lifespanDays) * 105));
+      // Capacity Percentage
+      let capacityPercent = Math.max(0, Math.min(100, (diffDays / state.lifespanDays) * 100));
       
-      // Calculate CSS height
-      let heightPct = 15 + (capacityPercent * 0.7);
+      // Update SVG Circular Wheel Stroke Offset
+      const circumference = 2 * Math.PI * 102; // r=102 -> ~640.88
+      const offset = circumference - (capacityPercent / 100) * circumference;
+      progressRingActive.style.strokeDashoffset = offset;
+
+      // Update Dynamic Water Level inside the Aarke Jug SVG Outline
+      // Full water height bounds: y=95 to y=230 (range is 135px)
+      const fullY = 95;
+      const emptyY = 225;
+      const rangeY = emptyY - fullY;
+      
+      const targetY = emptyY - (capacityPercent / 100) * rangeY;
+      const targetHeight = 232 - targetY;
+
+      waterLiquid.setAttribute('y', targetY);
+      waterLiquid.setAttribute('height', targetHeight);
+
+      // Slide wave overlay path to the top waterline position
+      waterWave.setAttribute('transform', `translate(0, ${targetY - 100})`);
+
+      // Empty Warning Indicators
       if (diffDays <= 0) {
-        heightPct = 10;
         daysCountEl.classList.add('text-red-500');
-        daysCountEl.classList.remove('text-white');
+        daysCountEl.classList.remove('text-slate-800');
+        dueDatePreviewEl.classList.add('text-red-500');
+        dueDatePreviewEl.classList.remove('text-sky-600');
       } else {
         daysCountEl.classList.remove('text-red-500');
-        daysCountEl.classList.add('text-white');
+        daysCountEl.classList.add('text-slate-800');
+        dueDatePreviewEl.classList.remove('text-red-500');
+        dueDatePreviewEl.classList.add('text-sky-600');
       }
-
-      waterLevelEl.style.height = `${heightPct}%`;
-      waterLevelBackEl.style.height = `${heightPct + 3}%`;
 
       // Update Calendars Links
       updateCalendarDirectives(dueDate);
     }
 
-    // GCal Pre-built Template link Construction
+    // GCal Template link Construction
     function updateCalendarDirectives(targetDate) {
       const startEvent = new Date(targetDate);
       startEvent.setHours(9, 0, 0, 0);
@@ -337,7 +450,7 @@
       showToast(
         "Aarke Jug Reset!", 
         `New target date is scheduled 31 days from now. Use the calendar link below to configure your Google Calendar event.`, 
-        "fa-solid fa-rotate"
+        "fa-solid fa-droplet"
       );
     }
 
@@ -356,7 +469,6 @@
       panel.classList.remove('translate-y-full');
     }
 
-    // Close Settings View
     function closeSettings() {
       const modal = document.getElementById('settings-modal');
       const panel = document.getElementById('settings-panel');
