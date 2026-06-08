@@ -48,6 +48,19 @@
     .water-float {
       animation: waveFloat 4s ease-in-out infinite;
     }
+    /* Hide default date picker arrow/icon for a cleaner iOS look, while keeping clickability */
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      background: transparent;
+      bottom: 0;
+      color: transparent;
+      cursor: pointer;
+      left: 0;
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: auto;
+      height: auto;
+    }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-[100dvh] flex flex-col justify-between overflow-x-hidden selection:bg-blue-200 bg-gradient-to-b from-sky-50 to-slate-100">
@@ -66,13 +79,14 @@
           <p class="text-[11px] text-slate-500 font-medium uppercase tracking-wider">Premium Filter Tracker</p>
         </div>
       </div>
-      <button onclick="openSettings()" class="w-9 h-9 rounded-full bg-white hover:bg-slate-50 active:scale-95 transition flex items-center justify-center border border-slate-200 shadow-sm">
-        <i class="fa-solid fa-sliders text-slate-600 text-sm"></i>
+      <!-- Settings Cog Button with Gear Icon -->
+      <button onclick="openSettings()" class="w-9 h-9 rounded-full bg-white hover:bg-slate-50 active:scale-95 transition flex items-center justify-center border border-slate-200 shadow-sm" aria-label="Settings">
+        <i class="fa-solid fa-gear text-slate-600 text-sm"></i>
       </button>
     </header>
 
     <!-- Visual Water Tracker Dashboard -->
-    <main class="flex-grow flex flex-col justify-center items-center py-4 gap-4">
+    <main class="flex-grow flex flex-col justify-center items-center py-2 gap-3">
       
       <!-- Circular Progress Ring (The Outer Expiry Wheel) -->
       <div class="relative w-64 h-64 rounded-full flex items-center justify-center bg-white/60 backdrop-blur-md border border-white/80 shadow-xl shadow-slate-200/50 overflow-hidden">
@@ -187,14 +201,20 @@
         
       </div>
 
-      <!-- Quick Status Badges -->
+      <!-- Quick Status Badges with Custom Section Icons -->
       <div class="grid grid-cols-2 gap-3 w-full">
         <div class="bg-white border border-slate-200/80 rounded-2xl p-3 flex flex-col justify-center shadow-sm">
-          <span class="text-[8px] uppercase tracking-widest text-slate-400 font-extrabold">Last Filter Swap</span>
+          <div class="flex items-center gap-1.5 text-slate-400">
+            <i class="fa-solid fa-clock-rotate-left text-[10px]"></i>
+            <span class="text-[8px] uppercase tracking-widest font-extrabold">Last Filter Swap</span>
+          </div>
           <span id="last-changed-status" class="text-xs font-bold text-slate-800 mt-1">--/--/----</span>
         </div>
         <div class="bg-white border border-slate-200/80 rounded-2xl p-3 flex flex-col justify-center shadow-sm">
-          <span class="text-[8px] uppercase tracking-widest text-slate-400 font-extrabold">Standard Lifespan</span>
+          <div class="flex items-center gap-1.5 text-slate-400">
+            <i class="fa-solid fa-hourglass-half text-[10px]"></i>
+            <span class="text-[8px] uppercase tracking-widest font-extrabold">Standard Lifespan</span>
+          </div>
           <span id="lifespan-status" class="text-xs font-bold text-slate-800 mt-1">31 Days</span>
         </div>
       </div>
@@ -204,11 +224,25 @@
     <!-- Bottom Action Console -->
     <footer class="flex flex-col gap-3">
       
-      <!-- Primary Reset Timer Action - High Impact Light Blue Button -->
-      <button onclick="handleReplacementReset()" class="w-full bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 active:scale-[0.98] transition-all py-4 px-6 rounded-2xl text-white font-extrabold flex items-center justify-center gap-3 shadow-lg shadow-sky-200/85">
-        <i class="fa-solid fa-arrows-rotate text-sm"></i>
-        <span class="tracking-widest uppercase text-xs">Mark Replaced Today</span>
-      </button>
+      <!-- Primary Reset Grid (Today vs Custom Past Date Selector) -->
+      <div class="grid grid-cols-12 gap-2 w-full">
+        
+        <!-- Button A: Quick Set to Today (with droplet & check icon) -->
+        <button onclick="handleReplacementReset()" class="col-span-7 bg-gradient-to-r from-sky-50 to-blue-600 hover:from-sky-600 hover:to-blue-700 active:scale-[0.97] transition-all py-3.5 px-3 rounded-2xl text-white font-extrabold flex items-center justify-center gap-2 shadow-lg shadow-sky-200/80" style="background-image: linear-gradient(to right, #0ea5e9, #2563eb);">
+          <i class="fa-solid fa-filter text-xs"></i>
+          <span class="tracking-wider uppercase text-[10px]">Replaced Today</span>
+        </button>
+
+        <!-- Button B: Direct Date Override Selector (with Calendar Day Icon) -->
+        <div class="col-span-5 relative bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-[0.97] transition-all rounded-2xl flex items-center justify-center shadow-sm overflow-hidden">
+          <input type="date" id="front-date-picker" onchange="handleDirectDateChange(this.value)" class="absolute inset-0 opacity-0 z-25 cursor-pointer w-full h-full">
+          <div class="flex items-center gap-1.5 pointer-events-none text-slate-700 py-3">
+            <i class="fa-solid fa-calendar-day text-sky-500 text-xs"></i>
+            <span class="text-[10px] font-extrabold uppercase tracking-wider">Changed on...</span>
+          </div>
+        </div>
+
+      </div>
 
       <!-- Calendar Sync Panel -->
       <div class="bg-white/80 border border-slate-200/80 rounded-2xl p-4 flex flex-col gap-3 shadow-md">
@@ -221,15 +255,15 @@
         </div>
 
         <div class="grid grid-cols-2 gap-3">
-          <!-- Add to Google Calendar Link - Rich Contrast Black Slate Button -->
+          <!-- Add to Google Calendar Link - High Contrast Black Button with Calendar Plus Icon -->
           <a id="gcal-btn" href="#" target="_blank" class="bg-slate-900 hover:bg-slate-800 active:bg-black transition text-white py-3.5 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-2 text-center shadow-md">
             <i class="fa-solid fa-calendar-plus text-sky-400"></i>
             <span>Google Calendar</span>
           </a>
 
-          <!-- Download Standard ICS Event (For iOS default calendar) -->
+          <!-- Download Standard ICS Event - White Button with Native Apple Icon -->
           <button onclick="downloadIcsFile()" class="bg-white hover:bg-slate-50 active:bg-slate-100 transition text-slate-700 border border-slate-200 py-3.5 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm">
-            <i class="fa-solid fa-apple-whole text-slate-800"></i>
+            <i class="fa-brands fa-apple text-slate-800 text-sm"></i>
             <span>iOS Cal (.ics)</span>
           </button>
         </div>
@@ -247,8 +281,12 @@
       <div class="w-12 h-1.5 bg-slate-300 rounded-full mx-auto -mt-2 cursor-pointer" onclick="closeSettings()"></div>
 
       <div class="flex justify-between items-center">
-        <h2 class="text-xs font-black text-slate-900 tracking-widest uppercase"><i class="fa-solid fa-sliders text-sky-500 mr-2"></i>Configure Tracker</h2>
-        <button onclick="closeSettings()" class="text-xs font-bold text-sky-500 uppercase tracking-widest">Done</button>
+        <h2 class="text-xs font-black text-slate-900 tracking-widest uppercase flex items-center gap-2"><i class="fa-solid fa-sliders text-sky-500"></i>Configure Tracker</h2>
+        <!-- Settings "Done" Action Button with double checkmark icon -->
+        <button onclick="closeSettings()" class="text-xs font-bold text-sky-500 uppercase tracking-widest flex items-center gap-1 hover:opacity-80 active:scale-95 transition">
+          <i class="fa-solid fa-check-double text-[10px]"></i>
+          <span>Done</span>
+        </button>
       </div>
 
       <div class="flex flex-col gap-4">
@@ -275,15 +313,17 @@
           </div>
         </div>
 
-        <!-- Manual Last Replaced Selector -->
+        <!-- Manual Last Replaced Selector inside Settings -->
         <div class="flex flex-col gap-1.5">
           <label class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Manual Change Date Override</label>
           <input type="date" id="date-override" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 outline-none focus:border-sky-500 transition">
         </div>
       </div>
 
-      <button onclick="saveSettings()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl transition text-xs uppercase tracking-widest shadow-md">
-        Save Configurations
+      <!-- Settings "Save Configurations" Action Button with floppy disk icon -->
+      <button onclick="saveSettings()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl transition text-xs uppercase tracking-widest shadow-md flex items-center justify-center gap-2">
+        <i class="fa-solid fa-floppy-disk text-xs"></i>
+        <span>Save Configurations</span>
       </button>
 
     </div>
@@ -310,6 +350,11 @@
 
     // Load State on Boot
     window.addEventListener('load', () => {
+      // Setup default max date limits so users can't choose future dates
+      const todayString = new Date().toISOString().split('T')[0];
+      document.getElementById('front-date-picker').setAttribute('max', todayString);
+      document.getElementById('date-override').setAttribute('max', todayString);
+
       const saved = localStorage.getItem('aarke_track_v2');
       if (saved) {
         try {
@@ -324,13 +369,14 @@
         state.lastReplacedDate = new Date();
       }
 
-      // Populate Inputs in Settings View
+      // Populate Inputs
       document.getElementById('email-input').value = state.email;
       document.getElementById('lifespan-slider').value = state.lifespanDays;
       updateLifespanLabel(state.lifespanDays);
       
       const formattedDateInput = state.lastReplacedDate.toISOString().split('T')[0];
       document.getElementById('date-override').value = formattedDateInput;
+      document.getElementById('front-date-picker').value = formattedDateInput;
 
       // Render Screen
       refreshDashboard();
@@ -373,7 +419,7 @@
       dueDatePreviewEl.innerText = `Due: ${dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
       
       // Last replaced presentation
-      lastChangedEl.innerText = state.lastReplacedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      lastChangedEl.innerText = state.lastReplacedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
       lifespanEl.innerText = `${state.lifespanDays} Days`;
 
       // Capacity Percentage
@@ -385,7 +431,6 @@
       progressRingActive.style.strokeDashoffset = offset;
 
       // Update Dynamic Water Level inside the Aarke Jug SVG Outline
-      // Full water height bounds: y=95 to y=230 (range is 135px)
       const fullY = 95;
       const emptyY = 225;
       const rangeY = emptyY - fullY;
@@ -437,20 +482,54 @@
       document.getElementById('gcal-btn').setAttribute('href', gCalUrl);
     }
 
-    // Trigger Replacement Cycle
+    // Trigger Replacement Cycle (Today)
     function handleReplacementReset() {
-      state.lastReplacedDate = new Date();
+      const today = new Date();
+      state.lastReplacedDate = today;
       persistState();
-      refreshDashboard();
-
-      // Set input override in settings to today
-      const formattedDateInput = state.lastReplacedDate.toISOString().split('T')[0];
+      
+      // Update interactive date pickers to today
+      const formattedDateInput = today.toISOString().split('T')[0];
+      document.getElementById('front-date-picker').value = formattedDateInput;
       document.getElementById('date-override').value = formattedDateInput;
+
+      refreshDashboard();
 
       showToast(
         "Aarke Jug Reset!", 
-        `New target date is scheduled 31 days from now. Use the calendar link below to configure your Google Calendar event.`, 
+        "New target date is scheduled 31 days from now. Use the calendar link below to configure your Google Calendar event.", 
         "fa-solid fa-droplet"
+      );
+    }
+
+    // Handle Direct Past Date Selection from Front Page
+    function handleDirectDateChange(selectedDateString) {
+      if (!selectedDateString) return;
+      
+      // Prevent timezone shifting by setting time to midday
+      const selectedDate = new Date(selectedDateString + 'T12:00:00');
+      
+      // Safety check: Cannot select future dates
+      const today = new Date();
+      if (selectedDate > today) {
+        showToast("Invalid Date", "You cannot select a future date.", "fa-solid fa-triangle-exclamation");
+        return;
+      }
+
+      state.lastReplacedDate = selectedDate;
+      persistState();
+
+      // Keep both inputs in sync
+      document.getElementById('front-date-picker').value = selectedDateString;
+      document.getElementById('date-override').value = selectedDateString;
+
+      refreshDashboard();
+
+      const options = { month: 'short', day: 'numeric', year: 'numeric' };
+      showToast(
+        "Date Updated!", 
+        `Last swap marked on ${selectedDate.toLocaleDateString('en-US', options)}. Expiry timeline updated.`, 
+        "fa-solid fa-calendar-check"
       );
     }
 
@@ -488,6 +567,7 @@
       
       if (overrideVal) {
         state.lastReplacedDate = new Date(overrideVal + 'T12:00:00'); // Prevent timezone shifts
+        document.getElementById('front-date-picker').value = overrideVal;
       }
 
       persistState();
