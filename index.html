@@ -247,15 +247,16 @@
       <!-- Calendar Sync Panel -->
       <div class="bg-white/80 border border-slate-200/80 rounded-2xl p-4 flex flex-col gap-3 shadow-md">
         <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <i class="fa-brands fa-google text-red-500 text-xs"></i>
-            <span class="text-xs font-bold text-slate-700">Gary.marshall5@gmail.com</span>
+          <div class="flex items-center gap-2 overflow-hidden">
+            <i class="fa-brands fa-google text-red-500 text-xs shrink-0"></i>
+            <!-- Dynamic Local Storage Email Target -->
+            <span id="email-display" class="text-xs font-bold text-slate-700 truncate">--</span>
           </div>
-          <span class="text-[9px] uppercase tracking-widest bg-sky-500/10 text-sky-600 font-extrabold px-2 py-0.5 rounded border border-sky-500/20">Sync Filter</span>
+          <span class="text-[9px] uppercase tracking-widest bg-sky-500/10 text-sky-600 font-extrabold px-2 py-0.5 rounded border border-sky-500/20 shrink-0">Sync Filter</span>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
-          <!-- Add to Google Calendar Link - High Contrast Black Button with Calendar Plus Icon -->
+          <!-- Add to Google Calendar Link - Rich Contrast Black Slate Button -->
           <a id="gcal-btn" href="#" target="_blank" class="bg-slate-900 hover:bg-slate-800 active:bg-black transition text-white py-3.5 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-2 text-center shadow-md">
             <i class="fa-solid fa-calendar-plus text-sky-400"></i>
             <span>Google Calendar</span>
@@ -294,7 +295,7 @@
         <div class="flex flex-col gap-1.5">
           <label class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Target Google Account</label>
           <div class="relative">
-            <input type="email" id="email-input" value="Gary.marshall5@gmail.com" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 outline-none focus:border-sky-500 transition">
+            <input type="email" id="email-input" placeholder="Enter your email" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 outline-none focus:border-sky-500 transition">
             <i class="fa-solid fa-envelope absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
           </div>
         </div>
@@ -316,7 +317,7 @@
         <!-- Manual Last Replaced Selector inside Settings -->
         <div class="flex flex-col gap-1.5">
           <label class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Manual Change Date Override</label>
-          <input type="date" id="date-override" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 outline-none focus:border-sky-500 transition">
+          <input type="date" id="date-override" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-500 transition">
         </div>
       </div>
 
@@ -341,9 +342,9 @@
   </div>
 
   <script>
-    // App State Configuration
+    // App State Configuration - Hardcoded emails completely removed to support safe hosting on GitHub!
     let state = {
-      email: 'Gary.marshall5@gmail.com',
+      email: '',
       lifespanDays: 31,
       lastReplacedDate: null
     };
@@ -359,7 +360,7 @@
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
-          state.email = parsed.email || 'Gary.marshall5@gmail.com';
+          state.email = parsed.email || '';
           state.lifespanDays = parseInt(parsed.lifespanDays) || 31;
           state.lastReplacedDate = parsed.lastReplacedDate ? new Date(parsed.lastReplacedDate) : new Date();
         } catch(e) {
@@ -369,7 +370,7 @@
         state.lastReplacedDate = new Date();
       }
 
-      // Populate Inputs
+      // Populate Inputs with the saved local state values
       document.getElementById('email-input').value = state.email;
       document.getElementById('lifespan-slider').value = state.lifespanDays;
       updateLifespanLabel(state.lifespanDays);
@@ -413,6 +414,18 @@
       const progressRingActive = document.getElementById('progress-ring-active');
       const waterLiquid = document.getElementById('water-liquid');
       const waterWave = document.getElementById('water-wave');
+      const emailDisplay = document.getElementById('email-display');
+
+      // Update email display text or show a prompt to configure it
+      if (state.email) {
+        emailDisplay.innerText = state.email;
+        emailDisplay.classList.remove('text-amber-600', 'italic');
+        emailDisplay.classList.add('text-slate-700');
+      } else {
+        emailDisplay.innerText = 'Tap settings gear to configure email';
+        emailDisplay.classList.remove('text-slate-700');
+        emailDisplay.classList.add('text-amber-600', 'italic');
+      }
 
       // Set Text
       daysCountEl.innerText = diffDays;
@@ -476,8 +489,11 @@
       const details = encodeURIComponent("Reminder generated by your Aarke Jug Tracker. Replace your pure filter granules now to keep your water fresh.");
       const datesParam = `${formatToUTC(startEvent)}/${formatToUTC(endEvent)}`;
       
+      // Check if email exists before attaching parameter to prevent blank invites
+      const addAttendeeParam = state.email ? `&add=${encodeURIComponent(state.email)}` : '';
+      
       // Construct Web GCal Template URL
-      const gCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${datesParam}&details=${details}&add=${encodeURIComponent(state.email)}`;
+      const gCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${datesParam}&details=${details}${addAttendeeParam}`;
       
       document.getElementById('gcal-btn').setAttribute('href', gCalUrl);
     }
@@ -543,6 +559,9 @@
       const modal = document.getElementById('settings-modal');
       const panel = document.getElementById('settings-panel');
       
+      // Sync setting's input to the current state.email loaded from storage
+      document.getElementById('email-input').value = state.email;
+
       modal.classList.remove('pointer-events-none', 'opacity-0');
       modal.classList.add('opacity-100');
       panel.classList.remove('translate-y-full');
@@ -562,7 +581,7 @@
       const sliderVal = parseInt(document.getElementById('lifespan-slider').value);
       const overrideVal = document.getElementById('date-override').value;
 
-      if (targetEmail) state.email = targetEmail;
+      state.email = targetEmail; // Saves whatever string (even empty) the user configured
       state.lifespanDays = sliderVal;
       
       if (overrideVal) {
@@ -591,7 +610,10 @@
         return d.toISOString().replace(/-|:|\.\d\d\d/g, "");
       };
 
-      const icsMsg = [
+      // Construct dynamic attendee line only if email is populated
+      const attendeeSection = state.email ? `ATTENDEE;CN=User;RSVP=FALSE:mailto:${state.email}` : '';
+
+      const icsLines = [
         "BEGIN:VCALENDAR",
         "VERSION:2.0",
         "PRODID:-//AarkeJug//Water Filter Reminders//EN",
@@ -601,11 +623,17 @@
         `DTSTART:${formatToICS(startEvent)}`,
         `DTEND:${formatToICS(endEvent)}`,
         "SUMMARY:Replace Aarke Jug Filter 💦",
-        "DESCRIPTION:Time to change your Aarke filter granules to maintain great-tasting, clean water.",
-        "ATTENDEE;CN=Gary Marshall;RSVP=FALSE:mailto:" + state.email,
-        "END:VEVENT",
-        "END:VCALENDAR"
-      ].join("\r\n");
+        "DESCRIPTION:Time to change your Aarke filter granules to maintain great-tasting, clean water."
+      ];
+
+      if (attendeeSection) {
+        icsLines.push(attendeeSection);
+      }
+
+      icsLines.push("END:VEVENT");
+      icsLines.push("END:VCALENDAR");
+
+      const icsMsg = icsLines.join("\r\n");
 
       const blob = new Blob([icsMsg], { type: "text/calendar;charset=utf-8" });
       const link = document.createElement("a");
