@@ -114,4 +114,534 @@
 
         <div class="absolute inset-4 rounded-full bg-gradient-to-b from-white to-slate-50 flex flex-col items-center justify-center shadow-inner border border-white">
           
-          <svg id="jug-svg" viewBox="
+          <svg id="jug-svg" viewBox="0 0 200 240" class="w-32 h-36 drop-shadow-[0_8px_16px_rgba(14,165,233,0.1)]">
+            <defs>
+              <linearGradient id="jug-glass" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9" />
+                <stop offset="25%" stop-color="#ffffff" stop-opacity="0.2" />
+                <stop offset="75%" stop-color="#ffffff" stop-opacity="0.1" />
+                <stop offset="100%" stop-color="#cbd5e1" stop-opacity="0.6" />
+              </linearGradient>
+              
+              <linearGradient id="steel-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#94a3b8" />
+                <stop offset="35%" stop-color="#e2e8f0" />
+                <stop offset="65%" stop-color="#f1f5f9" />
+                <stop offset="100%" stop-color="#64748b" />
+              </linearGradient>
+
+              <linearGradient id="water-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.8" />
+                <stop offset="100%" stop-color="#0284c7" stop-opacity="0.9" />
+              </linearGradient>
+              
+              <clipPath id="jug-clip">
+                <path d="M76,40 L124,40 L134,70 L134,210 C134,225 120,232 100,232 C80,232 66,225 66,210 L66,70 Z" />
+              </clipPath>
+            </defs>
+
+            <g clip-path="url(#jug-clip)">
+              <rect id="water-liquid" x="50" y="95" width="100" height="140" fill="url(#water-grad)" />
+              <g id="water-wave">
+                <path d="M 50 100 C 75 96, 75 104, 100 100 C 125 96, 125 104, 150 100 L 150 115 L 50 115 Z" fill="#38bdf8" opacity="0.5" class="water-float" />
+              </g>
+            </g>
+
+            <path d="M82,40 L118,40 L114,130 L86,130 Z" fill="url(#steel-grad)" stroke="#475569" stroke-width="0.75" />
+            <line x1="93" y1="130" x2="93" y2="145" stroke="#94a3b8" stroke-width="1.5" />
+            <line x1="107" y1="130" x2="107" y2="145" stroke="#94a3b8" stroke-width="1.5" />
+            <rect x="90" y="145" width="20" height="16" rx="2" fill="#475569" opacity="0.85" />
+
+            <path d="M76,40 L124,40 L134,70 L134,210 C134,225 120,232 100,232 C80,232 66,225 66,210 L66,70 Z" 
+                  fill="url(#jug-glass)" stroke="#94a3b8" stroke-width="2.5" />
+
+            <path d="M76,40 L60,37 L64,48 Z" fill="url(#steel-grad)" stroke="#475569" stroke-width="1" />
+
+            <path d="M131,80 C154,80 154,190 131,190" fill="transparent" stroke="url(#steel-grad)" stroke-width="8" stroke-linecap="round" />
+            <path d="M131,80 C154,80 154,190 131,190" fill="transparent" stroke="#475569" stroke-width="0.75" stroke-linecap="round" />
+            
+            <path d="M72,35 L128,35 C128,35 131,40 125,40 L75,40 C69,40 72,35 72,35 Z" fill="url(#steel-grad)" stroke="#334155" stroke-width="1.5" />
+            <circle cx="100" cy="30" r="4.5" fill="url(#steel-grad)" stroke="#334155" stroke-width="1" />
+          </svg>
+
+          <div class="absolute bottom-4 flex flex-col items-center">
+            <span class="text-[9px] font-black tracking-widest text-slate-400 uppercase">Days To Go</span>
+            <span id="days-count" class="text-4xl font-extrabold text-slate-800 tracking-tighter leading-none mt-1">--</span>
+            <span id="due-date-preview" class="text-[10px] text-sky-600 font-bold tracking-wide mt-1">Calculating...</span>
+          </div>
+          
+        </div>
+        
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 w-full">
+        <div class="bg-white border border-slate-200/80 rounded-2xl p-3 flex flex-col justify-center shadow-sm">
+          <div class="flex items-center gap-1.5 text-slate-400">
+            <i class="fa-solid fa-clock-rotate-left text-[10px]"></i>
+            <span class="text-[8px] uppercase tracking-widest font-extrabold">Last Filter Swap</span>
+          </div>
+          <span id="last-changed-status" class="text-xs font-bold text-slate-800 mt-1">--/--/----</span>
+        </div>
+        <div class="bg-white border border-slate-200/80 rounded-2xl p-3 flex flex-col justify-center shadow-sm">
+          <div class="flex items-center gap-1.5 text-slate-400">
+            <i class="fa-solid fa-hourglass-half text-[10px]"></i>
+            <span class="text-[8px] uppercase tracking-widest font-extrabold">Standard Lifespan</span>
+          </div>
+          <span id="lifespan-status" class="text-xs font-bold text-slate-800 mt-1">31 Days</span>
+        </div>
+      </div>
+
+    </main>
+
+    <footer class="flex flex-col gap-3">
+      
+      <div class="grid grid-cols-12 gap-2 w-full">
+        
+        <button onclick="handleReplacementReset()" class="col-span-7 bg-gradient-to-r from-sky-50 to-blue-600 hover:from-sky-600 hover:to-blue-700 active:scale-[0.97] transition-all py-3.5 px-3 rounded-2xl text-white font-extrabold flex items-center justify-center gap-2 shadow-lg shadow-sky-200/80" style="background-image: linear-gradient(to right, #0ea5e9, #2563eb);">
+          <i class="fa-solid fa-filter text-xs"></i>
+          <span class="tracking-wider uppercase text-[10px]">Replaced Today</span>
+        </button>
+
+        <div class="col-span-5 relative bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-[0.97] transition-all rounded-2xl flex items-center justify-center shadow-sm overflow-hidden">
+          <input type="date" id="front-date-picker" onchange="handleDirectDateChange(this.value)" class="absolute inset-0 opacity-0 z-25 cursor-pointer w-full h-full">
+          <div class="flex items-center gap-1.5 pointer-events-none text-slate-700 py-3">
+            <i class="fa-solid fa-calendar-day text-sky-500 text-xs"></i>
+            <span class="text-[10px] font-extrabold uppercase tracking-wider">Changed on...</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="bg-white/80 border border-slate-200/80 rounded-2xl p-4 flex flex-col gap-3 shadow-md">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2 overflow-hidden">
+            <i class="fa-brands fa-google text-red-500 text-xs shrink-0"></i>
+            <span id="email-display" class="text-xs font-bold text-slate-700 truncate">--</span>
+          </div>
+          <span class="text-[9px] uppercase tracking-widest bg-sky-500/10 text-sky-600 font-extrabold px-2 py-0.5 rounded border border-sky-500/20 shrink-0">Sync Filter</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <a id="gcal-btn" href="#" target="_blank" class="bg-slate-900 hover:bg-slate-800 active:bg-black transition text-white py-3.5 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-2 text-center shadow-md">
+            <i class="fa-solid fa-calendar-plus text-sky-400"></i>
+            <span>Google Calendar</span>
+          </a>
+
+          <button onclick="downloadIcsFile()" class="bg-white hover:bg-slate-50 active:bg-slate-100 transition text-slate-700 border border-slate-200 py-3.5 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm">
+            <i class="fa-brands fa-apple text-slate-800 text-sm"></i>
+            <span>iOS Cal (.ics)</span>
+          </button>
+        </div>
+      </div>
+
+    </footer>
+
+  </div>
+
+  <div id="settings-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end justify-center transition-opacity duration-300 pointer-events-none opacity-0">
+    <div id="settings-panel" class="w-full max-w-md bg-white border-t border-slate-250 rounded-t-3xl p-6 transform translate-y-full transition-transform duration-300 flex flex-col gap-6 safe-padding shadow-2xl">
+      
+      <div class="w-12 h-1.5 bg-slate-300 rounded-full mx-auto -mt-2 cursor-pointer" onclick="closeSettings()"></div>
+
+      <div class="flex justify-between items-center">
+        <h2 class="text-xs font-black text-slate-900 tracking-widest uppercase flex items-center gap-2"><i class="fa-solid fa-sliders text-sky-500"></i>Configure Tracker</h2>
+        <button onclick="closeSettings()" class="text-xs font-bold text-sky-500 uppercase tracking-widest flex items-center gap-1 hover:opacity-80 active:scale-95 transition">
+          <i class="fa-solid fa-check-double text-[10px]"></i>
+          <span>Done</span>
+        </button>
+      </div>
+
+      <div class="flex flex-col gap-4">
+        <div class="flex flex-col gap-1.5">
+          <label class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Target Google Account</label>
+          <div class="relative">
+            <input type="email" id="email-input" placeholder="Enter your email" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 outline-none focus:border-sky-500 transition">
+            <i class="fa-solid fa-envelope absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <div class="flex justify-between">
+            <label class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Filter Lifespan (Days)</label>
+            <span id="lifespan-val" class="text-sm font-black text-sky-500">31 Days</span>
+          </div>
+          <input type="range" id="lifespan-slider" min="1" max="180" step="1" value="31" oninput="updateLifespanLabel(this.value)" class="w-full accent-sky-500 bg-slate-100 h-2 rounded-lg cursor-pointer">
+          <div class="flex justify-between text-[10px] text-slate-400 px-1 mt-0.5">
+            <span>1d</span>
+            <span>31d (Default)</span>
+            <span>180d</span>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Manual Change Date Override</label>
+          <input type="date" id="date-override" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-500 transition">
+        </div>
+      </div>
+
+      <button onclick="saveSettings()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl transition text-xs uppercase tracking-widest shadow-md flex items-center justify-center gap-2">
+        <i class="fa-solid fa-floppy-disk text-xs"></i>
+        <span>Save Configurations</span>
+      </button>
+
+    </div>
+  </div>
+
+  <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 bg-white/95 border border-sky-500/20 text-slate-800 px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 z-50 pointer-events-none transform -translate-y-24 opacity-0 transition-all duration-300 max-w-sm w-[90%]">
+    <div class="w-8 h-8 rounded-full bg-sky-500/10 flex items-center justify-center text-sky-500 shrink-0">
+      <i id="toast-icon" class="fa-solid fa-circle-check text-sm"></i>
+    </div>
+    <div class="flex flex-col">
+      <span id="toast-title" class="font-extrabold text-xs text-slate-900">Notification</span>
+      <span id="toast-desc" class="text-[11px] text-slate-500 font-medium">Action successfully processed.</span>
+    </div>
+  </div>
+
+  <script>
+    // App State Configuration
+    let state = {
+      email: '',
+      lifespanDays: 31,
+      lastReplacedDate: null
+    };
+
+    // Helper: format any date to local YYYY-MM-DD safely
+    function formatDateToLocalString(d) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    // Load State on Boot
+    window.addEventListener('load', () => {
+      // Setup default max date limits so users can't choose future dates
+      const today = new Date();
+      const todayString = formatDateToLocalString(today);
+      document.getElementById('front-date-picker').setAttribute('max', todayString);
+      document.getElementById('date-override').setAttribute('max', todayString);
+
+      const saved = localStorage.getItem('aarke_track_v2');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          state.email = parsed.email || '';
+          state.lifespanDays = parseInt(parsed.lifespanDays) || 31;
+          
+          // FIX: Normalize saved date to midnight local time
+          if (parsed.lastReplacedDate) {
+            state.lastReplacedDate = new Date(new Date(parsed.lastReplacedDate).toDateString());
+          } else {
+            state.lastReplacedDate = new Date(new Date().toDateString());
+          }
+        } catch(e) {
+          state.lastReplacedDate = new Date(new Date().toDateString());
+        }
+      } else {
+        state.lastReplacedDate = new Date(new Date().toDateString());
+      }
+
+      // Populate Inputs with the saved local state values
+      document.getElementById('email-input').value = state.email;
+      document.getElementById('lifespan-slider').value = state.lifespanDays;
+      updateLifespanLabel(state.lifespanDays);
+      
+      const formattedDateInput = formatDateToLocalString(state.lastReplacedDate);
+      document.getElementById('date-override').value = formattedDateInput;
+      document.getElementById('front-date-picker').value = formattedDateInput;
+
+      // Render Screen
+      refreshDashboard();
+    });
+
+    // Save state helper
+    function persistState() {
+      localStorage.setItem('aarke_track_v2', JSON.stringify({
+        email: state.email,
+        lifespanDays: state.lifespanDays,
+        lastReplacedDate: state.lastReplacedDate.toISOString()
+      }));
+    }
+
+    // Refresh Dashboard Layout Logic
+    function refreshDashboard() {
+      if (!state.lastReplacedDate) return;
+
+      // FIX: Use midnight of the current day
+      const now = new Date(new Date().toDateString());
+      
+      // Target Due Date
+      const dueDate = new Date(state.lastReplacedDate.getTime());
+      dueDate.setDate(dueDate.getDate() + state.lifespanDays);
+
+      // Diff Days Calculation
+      const diffTime = dueDate.getTime() - now.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      // Visual updates
+      const daysCountEl = document.getElementById('days-count');
+      const dueDatePreviewEl = document.getElementById('due-date-preview');
+      const lastChangedEl = document.getElementById('last-changed-status');
+      const lifespanEl = document.getElementById('lifespan-status');
+      const progressRingActive = document.getElementById('progress-ring-active');
+      const waterLiquid = document.getElementById('water-liquid');
+      const waterWave = document.getElementById('water-wave');
+      const emailDisplay = document.getElementById('email-display');
+
+      // Update email display text or show a prompt to configure it
+      if (state.email) {
+        emailDisplay.innerText = state.email;
+        emailDisplay.classList.remove('text-amber-600', 'italic');
+        emailDisplay.classList.add('text-slate-700');
+      } else {
+        emailDisplay.innerText = 'Tap settings gear to configure email';
+        emailDisplay.classList.remove('text-slate-700');
+        emailDisplay.classList.add('text-amber-600', 'italic');
+      }
+
+      // Set Text
+      daysCountEl.innerText = diffDays;
+      dueDatePreviewEl.innerText = `Due: ${dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+      
+      // Last replaced presentation
+      lastChangedEl.innerText = state.lastReplacedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      lifespanEl.innerText = `${state.lifespanDays} Days`;
+
+      // Capacity Percentage
+      let capacityPercent = Math.max(0, Math.min(100, (diffDays / state.lifespanDays) * 100));
+      
+      // Update SVG Circular Wheel Stroke Offset
+      const circumference = 2 * Math.PI * 102; // r=102 -> ~640.88
+      const offset = circumference - (capacityPercent / 100) * circumference;
+      progressRingActive.style.strokeDashoffset = offset;
+
+      // Update Dynamic Water Level inside the Aarke Jug SVG Outline
+      const fullY = 95;
+      const emptyY = 225;
+      const rangeY = emptyY - fullY;
+      
+      const targetY = emptyY - (capacityPercent / 100) * rangeY;
+      const targetHeight = 232 - targetY;
+
+      waterLiquid.setAttribute('y', targetY);
+      waterLiquid.setAttribute('height', targetHeight);
+
+      // Slide wave overlay path to the top waterline position
+      waterWave.setAttribute('transform', `translate(0, ${targetY - 100})`);
+
+      // Empty Warning Indicators
+      if (diffDays <= 0) {
+        daysCountEl.classList.add('text-red-500');
+        daysCountEl.classList.remove('text-slate-800');
+        dueDatePreviewEl.classList.add('text-red-500');
+        dueDatePreviewEl.classList.remove('text-sky-600');
+      } else {
+        daysCountEl.classList.remove('text-red-500');
+        daysCountEl.classList.add('text-slate-800');
+        dueDatePreviewEl.classList.remove('text-red-500');
+        dueDatePreviewEl.classList.add('text-sky-600');
+      }
+
+      // Update Calendars Links
+      updateCalendarDirectives(dueDate);
+    }
+
+    // GCal Template link Construction
+    function updateCalendarDirectives(targetDate) {
+      const startEvent = new Date(targetDate);
+      startEvent.setHours(9, 0, 0, 0);
+      const endEvent = new Date(targetDate);
+      endEvent.setHours(10, 0, 0, 0);
+
+      const formatToUTC = (d) => {
+        return d.toISOString().replace(/-|:|\.\d\d\d/g, "");
+      };
+
+      const title = encodeURIComponent("Replace Aarke Jug Filter 💦");
+      const details = encodeURIComponent("Reminder generated by your Aarke Jug Tracker. Replace your pure filter granules now to keep your water fresh.");
+      const datesParam = `${formatToUTC(startEvent)}/${formatToUTC(endEvent)}`;
+      
+      // Check if email exists before attaching parameter to prevent blank invites
+      const addAttendeeParam = state.email ? `&add=${encodeURIComponent(state.email)}` : '';
+      
+      // Construct Web GCal Template URL
+      const gCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${datesParam}&details=${details}${addAttendeeParam}`;
+      
+      document.getElementById('gcal-btn').setAttribute('href', gCalUrl);
+    }
+
+    // Trigger Replacement Cycle (Today)
+    function handleReplacementReset() {
+      // FIX: Normalize today to midnight
+      const today = new Date(new Date().toDateString());
+      state.lastReplacedDate = today;
+      persistState();
+      
+      // Update interactive date pickers to today safely
+      const formattedDateInput = formatDateToLocalString(today);
+      document.getElementById('front-date-picker').value = formattedDateInput;
+      document.getElementById('date-override').value = formattedDateInput;
+
+      refreshDashboard();
+
+      showToast(
+        "Aarke Jug Reset!", 
+        "New target date is scheduled 31 days from now. Use the calendar link below to configure your Google Calendar event.", 
+        "fa-solid fa-droplet"
+      );
+    }
+
+    // Handle Direct Past Date Selection from Front Page
+    function handleDirectDateChange(selectedDateString) {
+      if (!selectedDateString) return;
+      
+      // FIX: Force to midnight local time
+      const selectedDate = new Date(new Date(selectedDateString + 'T12:00:00').toDateString());
+      
+      // Safety check: Cannot select future dates
+      const today = new Date(new Date().toDateString());
+      if (selectedDate > today) {
+        showToast("Invalid Date", "You cannot select a future date.", "fa-solid fa-triangle-exclamation");
+        // Revert input back to previous valid state
+        document.getElementById('front-date-picker').value = formatDateToLocalString(state.lastReplacedDate);
+        return;
+      }
+
+      state.lastReplacedDate = selectedDate;
+      persistState();
+
+      // Keep both inputs in sync
+      document.getElementById('front-date-picker').value = selectedDateString;
+      document.getElementById('date-override').value = selectedDateString;
+
+      refreshDashboard();
+
+      const options = { month: 'short', day: 'numeric', year: 'numeric' };
+      showToast(
+        "Date Updated!", 
+        `Last swap marked on ${selectedDate.toLocaleDateString('en-US', options)}. Expiry timeline updated.`, 
+        "fa-solid fa-calendar-check"
+      );
+    }
+
+    // Slider Label Sync
+    function updateLifespanLabel(val) {
+      document.getElementById('lifespan-val').innerText = `${val} Days`;
+    }
+
+    // Modal Control Functions
+    function openSettings() {
+      const modal = document.getElementById('settings-modal');
+      const panel = document.getElementById('settings-panel');
+      
+      // Sync setting's input to the current state.email loaded from storage
+      document.getElementById('email-input').value = state.email;
+
+      modal.classList.remove('pointer-events-none', 'opacity-0');
+      modal.classList.add('opacity-100');
+      panel.classList.remove('translate-y-full');
+    }
+
+    function closeSettings() {
+      const modal = document.getElementById('settings-modal');
+      const panel = document.getElementById('settings-panel');
+      
+      modal.classList.add('pointer-events-none', 'opacity-0');
+      modal.classList.remove('opacity-100');
+      panel.classList.add('translate-y-full');
+    }
+
+    function saveSettings() {
+      const targetEmail = document.getElementById('email-input').value.trim();
+      const sliderVal = parseInt(document.getElementById('lifespan-slider').value);
+      const overrideVal = document.getElementById('date-override').value;
+
+      state.email = targetEmail; 
+      state.lifespanDays = sliderVal;
+      
+      if (overrideVal) {
+        state.lastReplacedDate = new Date(new Date(overrideVal + 'T12:00:00').toDateString());
+        document.getElementById('front-date-picker').value = overrideVal;
+      }
+
+      persistState();
+      refreshDashboard();
+      closeSettings();
+
+      showToast("Settings Updated", "Configurations saved successfully.", "fa-solid fa-circle-check");
+    }
+
+    // Trigger ICS File Generation & Download for Native Apple iOS Calendar
+    function downloadIcsFile() {
+      const dueDate = new Date(state.lastReplacedDate.getTime());
+      dueDate.setDate(dueDate.getDate() + state.lifespanDays);
+      
+      const startEvent = new Date(dueDate);
+      startEvent.setHours(9, 0, 0, 0);
+      const endEvent = new Date(dueDate);
+      endEvent.setHours(10, 0, 0, 0);
+
+      const formatToICS = (d) => {
+        return d.toISOString().replace(/-|:|\.\d\d\d/g, "");
+      };
+
+      // Construct dynamic attendee line only if email is populated
+      const attendeeSection = state.email ? `ATTENDEE;CN=User;RSVP=FALSE:mailto:${state.email}` : '';
+
+      const icsLines = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//AarkeJug//Water Filter Reminders//EN",
+        "BEGIN:VEVENT",
+        `UID:${Date.now()}@aarkejug.app`,
+        `DTSTAMP:${formatToICS(new Date())}`,
+        `DTSTART:${formatToICS(startEvent)}`,
+        `DTEND:${formatToICS(endEvent)}`,
+        "SUMMARY:Replace Aarke Jug Filter 💦",
+        "DESCRIPTION:Time to change your Aarke filter granules to maintain great-tasting, clean water."
+      ];
+
+      if (attendeeSection) {
+        icsLines.push(attendeeSection);
+      }
+
+      icsLines.push("END:VEVENT");
+      icsLines.push("END:VCALENDAR");
+
+      const icsMsg = icsLines.join("\r\n");
+
+      const blob = new Blob([icsMsg], { type: "text/calendar;charset=utf-8" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "replace-aarke-filter.ics";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      showToast("Download Initialized", "Your iOS .ics event card is ready. Tap to install into Apple Calendar.", "fa-solid fa-download");
+    }
+
+    // Custom iOS style Alert Toast Engine
+    function showToast(title, description, iconClass = "fa-solid fa-circle-check") {
+      const toast = document.getElementById('toast');
+      const toastTitle = document.getElementById('toast-title');
+      const toastDesc = document.getElementById('toast-desc');
+      const toastIcon = document.getElementById('toast-icon');
+
+      toastTitle.innerText = title;
+      toastDesc.innerText = description;
+      toastIcon.className = iconClass;
+
+      // Animate slide down and in
+      toast.classList.remove('-translate-y-24', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      // Dismiss automatically
+      setTimeout(() => {
+        toast.classList.add('-translate-y-24', 'opacity-0');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 5000);
+    }
+  </script>
+</body>
+</html>
